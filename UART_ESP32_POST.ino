@@ -23,7 +23,7 @@ const unsigned long WIFI_TIMEOUT = 15000; // 15 segundos timeout
 const String NVS_NAMESPACE = "wifi_config";
 
 // Configuración del servidor
-const char* serverURL = "http://tu-servidor.com/api/data"; // Cambiar por tu URL del servidor
+const char* serverURL = "http://URL_DEL_SERVIDOR"; // Cambiar por tu URL del servidor
 
 // Configuración NTP
 const char* ntpServer = "pool.ntp.org";
