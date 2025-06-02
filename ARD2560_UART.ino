@@ -1,6 +1,6 @@
 /*
- * Arduino Mega 2560 Rev3 - Sistema de Tiempo con ESP32
- * Recibe datos de tiempo del ESP32 via UART
+ * Arduino Mega 2560 Rev3 - Sistema de veriables temporales con ESP32
+ * Recibe datos temporales del ESP32 via UART
  * Envía datos cada 2 minutos de vuelta al ESP32
  */
 
@@ -64,7 +64,7 @@ void loop() {
 
 void sendTimeToESP32() {
   if (receivedDateTime != "") {
-    // Calcular nuevo tiempo (agregar 2 minutos al tiempo recibido)
+    // Nuevo tiempo ( +2 minutos al tiempo recibido )
     String newDateTime = addMinutesToDateTime(receivedDateTime, 2);
     
     Serial.println(newDateTime);
