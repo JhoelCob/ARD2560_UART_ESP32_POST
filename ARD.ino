@@ -1,4 +1,4 @@
-// Programa para Arduino - Manejo de tiempo via UART
+// Arduino - ESP32 - Recepcion y envio de datos por tiempo via UART
 // Recibe hora inicial del ESP32 y envía datos cada 2 minutos
 
 #include <SoftwareSerial.h>
@@ -12,14 +12,14 @@ unsigned long lastSyncTime = 0;         // Última vez que se sincronizó
 unsigned long lastSendTime = 0;         // Última vez que se enviaron datos
 bool timeReceived = false;              // Flag para verificar si se recibió la hora
 
-const unsigned long SEND_INTERVAL = 120000; // 2 minutos en milisegundos
-const unsigned long SECOND_INTERVAL = 1000; // 1 segundo en milisegundos
+const unsigned long SEND_INTERVAL = 120000; // 2 minutos (Modificar despues)
+const unsigned long SECOND_INTERVAL = 1000; // 1 segundo
 
 void setup() {
   Serial.begin(9600);
   espSerial.begin(9600);
   
-  Serial.println("Arduino iniciado - Esperando hora del ESP32...");
+  Serial.println("Arduino iniciado - Esperando la obtencion de datos ESP32");
   
   // Esperar a recibir la hora inicial del ESP32
   while (!timeReceived) {
