@@ -1,0 +1,81 @@
+#include <WiFi.h>
+#include <HTTPClient.h>
+#include <ArduinoJson.h>
+#include "time.h"
+
+#define TXD 17
+#define RXD 16
+
+const char* ssid = "Zgroup_Piso1";
+const char* password = "Zgr0up3361@@";
+const char* serverURL = "http://161.132.206.104:9040/Datos/"; 
+
+const char* ntpServer = "pool.ntp.org";
+const long gmtOffset_sec = -5 * 3600;
+const int daylightOffset_sec = 0;
+
+void setup() {
+  Serial.begin(115200);
+  Serial2.begin(9600, SERIAL_8N1, RXD, TXD);
+
+  WiFi.begin(ssid, password);
+  Serial.print("Conectando a WiFi");
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("\nWiFi conectado");
+
+  configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
+  struct tm timeinfo;
+  while (!getLocalTime(&timeinfo)) {
+    Serial.println("Sincronizando NTP...");
+    delay(1000);
+  }
+
+  char horaInicio[20];
+  strftime(horaInicio, sizeof(horaInicio), "%Y-%m-%d %H:%M:%S", &timeinfo);
+  Serial2.println(horaInicio);
+  Serial.println("Hora inicial enviada");
+}
+
+void loop() {
+  if (Serial2.available()) {
+    String hora = Serial2.readStringUntil('\n');
+    hora.trim();
+    
+    if (hora.length() == 19) {
+      Serial.println("Hora recibida: " + hora);
+      enviarPOST(hora);
+    }
+  }
+  delay(100);
+}
+
+void enviarPOST(String tiempo) {
+  if (WiFi.status() == WL_CONNECTED) {
+    HTTPClient http;
+    http.begin(serverURL);
+    http.addHeader("Content-Type", "application/json");
+    
+    StaticJsonDocument<200> doc;
+    doc["Tiempo Arduino"] = tiempo;
+    doc["Desde"] = "ESP32_Arduino";
+    doc["Estado"] = "active";
+    
+    String jsonString;
+    serializeJson(doc, jsonString);
+    
+    int httpCode = http.POST(jsonString);
+    
+    if (httpCode > 0) {
+      String response = http.getString();
+      Serial.println("POST enviado: " + String(httpCode));
+      Serial.println("Respuesta: " + response);
+    } else {
+      Serial.println("Error en POST: " + String(httpCode));
+    }
+    
+    http.end();
+  }
+}
