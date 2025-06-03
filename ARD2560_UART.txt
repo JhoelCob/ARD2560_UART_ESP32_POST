@@ -1,0 +1,58 @@
+#include <TimeLib.h>
+
+time_t tiempoInicial = 0;
+unsigned long lastMillis = 0;
+bool inicializado = false;
+
+void setup() {
+  Serial.begin(9600);
+  Serial1.begin(9600);
+  Serial.println("Esperando hora...");
+}
+
+void loop() {
+  // Leer hora inicial
+  if (!inicializado && Serial1.available()) {
+    String hora = Serial1.readStringUntil('\n');
+    hora.trim();
+    
+    if (hora.length() == 19) {
+      tiempoInicial = convertirAUnix(hora);
+      if (tiempoInicial > 0) {
+        lastMillis = millis();
+        inicializado = true;
+        Serial.println("Inicializado");
+      }
+    }
+  }
+
+  // Enviar cada n segundos
+  if (inicializado && millis() - lastMillis >= 30000) {
+    tiempoInicial += 30; 
+    lastMillis = millis();
+    
+    tmElements_t tm;
+    breakTime(tiempoInicial, tm);
+    
+    char buffer[20];
+    sprintf(buffer, "%04d-%02d-%02d %02d:%02d:%02d",
+            tm.Year + 1970, tm.Month, tm.Day, tm.Hour, tm.Minute, tm.Second);
+    
+    Serial.println(buffer);
+    Serial1.println(buffer);
+  }
+}
+
+time_t convertirAUnix(String fecha) {
+  if (fecha.length() != 19) return 0;
+  
+  tmElements_t tm;
+  tm.Year = fecha.substring(0, 4).toInt() - 1970;
+  tm.Month = fecha.substring(5, 7).toInt();
+  tm.Day = fecha.substring(8, 10).toInt();
+  tm.Hour = fecha.substring(11, 13).toInt();
+  tm.Minute = fecha.substring(14, 16).toInt();
+  tm.Second = fecha.substring(17, 19).toInt();
+  
+  return makeTime(tm);
+}
